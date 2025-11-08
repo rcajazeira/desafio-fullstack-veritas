@@ -7,7 +7,7 @@ import (
 
 func main() {
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Fprintf(w, "✅ Backend Veritas está ON!")
+        fmt.Fprintf(w, "✅ Backend Veritas está ON!!")
     })
 
     fmt.Println("🚀 Servidor rodando em http://localhost:8080")
