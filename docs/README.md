@@ -21,13 +21,17 @@ Aplicação fullstack para gerenciamento de tarefas em formato Kanban, desenvolv
 ```bash
 cd backend
 go run main.go handlers.go models.go
-
 Servidor rodando em: http://localhost:8081
 Frontend (React)
+bash
+
+
+1
+2
+3
 cd frontend
 npm install  # só na primeira vez
 npm start
-
 Aplicação em: http://localhost:3000
 🧠 Decisões Técnicas
 Backend
