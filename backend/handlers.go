@@ -111,45 +111,51 @@ func createTask(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(newTask)
 }
 
-// updateTask atualiza uma tarefa existente
+// updateTask atualiza uma tarefa existente (agora aceita atualização parcial)
 func updateTask(w http.ResponseWriter, r *http.Request, id int) {
-	var updatedTask Task
+    var updateData map[string]interface{}
 
-	// Lê o corpo da requisição
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Erro ao ler dados", http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
+    // Lê o corpo da requisição
+    body, err := ioutil.ReadAll(r.Body)
+    if err != nil {
+        http.Error(w, "Erro ao ler dados", http.StatusBadRequest)
+        return
+    }
+    defer r.Body.Close()
 
-	// Decodifica o JSON
-	if err := json.Unmarshal(body, &updatedTask); err != nil {
-		http.Error(w, "Dados inválidos", http.StatusBadRequest)
-		return
-	}
+    // Decodifica o JSON
+    if err := json.Unmarshal(body, &updateData); err != nil {
+        http.Error(w, "Dados inválidos: "+err.Error(), http.StatusBadRequest)
+        return
+    }
 
-	// Validação básica
-	if updatedTask.Title == "" {
-		http.Error(w, "Título é obrigatório", http.StatusBadRequest)
-		return
-	}
+    mu.Lock()
+    defer mu.Unlock()
 
-	mu.Lock()
-	defer mu.Unlock()
+    // Verifica se a tarefa existe
+    task, exists := tasks[id]
+    if !exists {
+        http.Error(w, "Tarefa não encontrada", http.StatusNotFound)
+        return
+    }
 
-	// Verifica se a tarefa existe
-	if _, exists := tasks[id]; !exists {
-		http.Error(w, "Tarefa não encontrada", http.StatusNotFound)
-		return
-	}
+    // Atualiza apenas os campos presentes na requisição
+    if status, ok := updateData["status"]; ok {
+        // Garante que o status é uma string
+        if statusStr, ok := status.(string); ok {
+            task.Status = statusStr
+        } else {
+            http.Error(w, "Status deve ser uma string", http.StatusBadRequest)
+            return
+        }
+    }
+    
+    // Atualiza a tarefa no armazenamento
+    tasks[id] = task
 
-	// Atualiza a tarefa mantendo o ID
-	updatedTask.ID = id
-	tasks[id] = updatedTask
-
-	// Retorna a tarefa atualizada
-	json.NewEncoder(w).Encode(updatedTask)
+    // Retorna a tarefa atualizada
+    w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(task)
 }
 
 // deleteTask deleta uma tarefa

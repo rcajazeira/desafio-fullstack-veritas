@@ -84,28 +84,29 @@ function App() {
     }
   };
 
-  const handleMoveTask = async (taskId, currentStatus, newStatus) => {
-    try {
-      setLoading(true);
-      
-      const response = await fetch(`http://localhost:8081/tasks/${taskId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
+ const handleMoveTask = async (taskId, currentStatus, newStatus) => {
+  try {
+    setLoading(true);
+    
+    const response = await fetch(`http://localhost:8081/tasks/${taskId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // ENVIA APENAS O STATUS (NÃO O OBJETO COMPLETO)
+      body: JSON.stringify({ status: newStatus }) 
+    });
 
-      if (!response.ok) throw new Error('Erro ao mover tarefa');
-      
-      await loadTasks();
-    } catch (err) {
-      setError('Falha ao mover tarefa. Tente novamente.');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (!response.ok) throw new Error('Erro ao mover tarefa');
+    
+    await loadTasks();
+  } catch (err) {
+    setError('Falha ao mover tarefa. Tente novamente.');
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDeleteTask = async (taskId) => {
     if (!window.confirm('Tem certeza que deseja excluir esta tarefa?')) return;
